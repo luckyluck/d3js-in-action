@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Information Visualization</title>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script>
+      (async () => {
+        const [cities, { tweets }] = await Promise.all([
+          d3.csv('./cities.csv'),
+          d3.json('./tweets.json'),
+        ]);
+
+        console.log('cities:', cities);
+        console.log('tweets:', tweets);
+      })();
+    </script>
+</body>
+</html>
