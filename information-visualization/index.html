@@ -7,15 +7,28 @@
 <body>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script>
-      (async () => {
-        const [cities, { tweets }] = await Promise.all([
-          d3.csv('./cities.csv'),
-          d3.json('./tweets.json'),
-        ]);
+      // (async () => {
+      //   const [cities, { tweets }] = await Promise.all([
+      //     d3.csv('./cities.csv'),
+      //     d3.json('./tweets.json'),
+      //   ]);
+      //
+      //   console.log('cities:', cities);
+      //   console.log('tweets:', tweets);
+      // })();
+      function dataViz(incomingData) {
+        d3.select('body')
+          .selectAll('div.cities')
+          .data(incomingData)
+          .enter()
+          .append('div')
+          .attr('class', 'cities')
+          .html(d => d.label);
+      }
 
-        console.log('cities:', cities);
-        console.log('tweets:', tweets);
-      })();
+      d3.csv('./cities.csv').then(data => {
+        dataViz(data);
+      }).catch(console.error);
     </script>
 </body>
 </html>
