@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-    <meta charset="UTF-8">
+    <meta charset='UTF-8'>
     <title>Information Visualization</title>
 </head>
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src='https://cdn.jsdelivr.net/npm/d3@7'></script>
+    <script src='https://d3js.org/d3-collection.v1.min.js'></script>
     <script>
       // (async () => {
       //   const [cities, { tweets }] = await Promise.all([
@@ -17,17 +18,116 @@
       //   console.log('tweets:', tweets);
       // })();
       function dataViz(incomingData) {
+        const maxPopulation = d3.max(incomingData, d => parseInt(d.population, 10));
+        const yScale = d3.scaleLinear().domain([0, maxPopulation]).range([0, 460]);
+
         d3.select('body')
-          .selectAll('div.cities')
+          .append('svg')
+          .attr('style', 'height: 500px; width: 600px; display: block;')
+        // d3.select('svg')
+          .selectAll('rect')
           .data(incomingData)
           .enter()
-          .append('div')
-          .attr('class', 'cities')
-          .html(d => d.label);
+          .append('rect')
+          .attr('width', 50)
+          .attr('height', d => yScale(parseInt(d.population, 10)))
+          .attr('x', (d, i) => i * 60)
+          .attr('y', (d, i) => 480 - yScale(parseInt(d.population)))
+          .style('fill', '#FE9922')
+          .style('stroke', '#9A8B7A')
+          .style('stroke-width', '1px');
+
+        // d3.select('body')
+        //   .selectAll('div.cities')
+        //   .data(incomingData)
+        //   .enter()
+        //   .append('div')
+        //   .attr('class', 'cities')
+        //   .html(d => d.label);
       }
 
-      d3.csv('./cities.csv').then(data => {
-        dataViz(data);
+      d3.csv('./cities.csv').then(dataViz).catch(console.error);
+      d3.json('./tweets.json').then(({ tweets }) => {
+          const nestedTweets = d3.nest().key(d => d.user).entries(tweets);
+
+          nestedTweets.forEach(d => {
+            d.numTweets = d.values.length;
+          });
+
+          const maxTweets = d3.max(nestedTweets, d => d.numTweets);
+          const yScale = d3.scaleLinear().domain([0, maxTweets]).range([0, 500]);
+
+          d3.select('body')
+            .append('svg')
+            .attr('style', 'height: 480px; width: 600px; display: block;')
+            .selectAll('rect')
+            .data(nestedTweets)
+            .enter()
+            .append('rect')
+            .attr('width', 50)
+            .attr('height', d => yScale(d.numTweets))
+            .attr('x', (d,i) => i * 60)
+            .attr('y', d => 500 - yScale(d.numTweets))
+            .style('fill', '#FE9922')
+            .style('stroke', '#9A8B7A')
+            .style('stroke-width', '1px');
+      }).catch(console.error);
+      d3.json('./tweets.json').then(({ tweets }) => {
+        tweets.forEach(d => {
+          d.impact = d.favorites.length + d.retweets.length;
+          d.tweetTime = new Date(d.timestamp);
+        });
+
+        const maxImpact = d3.max(tweets, d => d.impact);
+        const startEnd = d3.extent(tweets, d => d.tweetTime);
+        const timeRamp = d3.scaleTime().domain(startEnd).range([20,480]);
+        const yScale = d3.scaleLinear().domain([0,maxImpact]).range([0,460]);
+        const radiusScale = d3.scaleLinear().domain([0,maxImpact]).range([1,20]);
+        const colorScale = d3.scaleLinear().domain([0,maxImpact]).range(['white','#75739F']);
+
+        d3.select('body')
+          .append('svg')
+          .attr('style', 'height: 480px; width: 600px; display: block;')
+          .selectAll('circle')
+          .data(tweets)
+          .enter()
+          .append('circle')
+          .attr('r', d => radiusScale(d.impact))
+          .attr('cx', d => timeRamp(d.tweetTime))
+          .attr('cy', d => 480 - yScale(d.impact))
+          .style('fill', d => colorScale(d.impact))
+          .style('stroke', 'black')
+          .style('stroke-width', '1px');
+      }).catch(console.error);
+      d3.json('./tweets.json').then(({ tweets }) => {
+        tweets.forEach(d => {
+          d.impact = d.favorites.length + d.retweets.length;
+          d.tweetTime = new Date(d.timestamp);
+        });
+
+        const maxImpact = d3.max(tweets, d => d.impact);
+        const startEnd = d3.extent(tweets, d => d.tweetTime);
+        const timeRamp = d3.scaleTime().domain(startEnd).range([20,480]);
+        const yScale = d3.scaleLinear().domain([0,maxImpact]).range([0,460]);
+        const radiusScale = d3.scaleLinear().domain([0,maxImpact]).range([1,20]);
+
+        const tweetG = d3.select('body')
+          .append('svg')
+          .attr('style', 'height: 480px; width: 600px; display: block;')
+          .selectAll('g')
+          .data(tweets)
+          .enter()
+          .append('g')
+          .attr('transform', d =>
+            `translate(${timeRamp(d.tweetTime)}, ${480 - yScale(d.impact)})`
+          );
+        tweetG.append('circle')
+          .attr('r', d => radiusScale(d.impact))
+          .style('fill', '#75739F')
+          .style('stroke', 'black')
+          .style('stroke-width', '1px');
+        tweetG.append('text')
+          .text(d => `${d.user}-${d.tweetTime.getHours()}`);
       }).catch(console.error);
     </script>
 </body>
