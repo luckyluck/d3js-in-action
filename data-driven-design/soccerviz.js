@@ -66,7 +66,45 @@ function unHighlight() {
     .attr('y', 30);
 }
 
+function teamClick(_, d) {
+  d3.selectAll('td.data')
+    .data(Object.values(d))
+    .html(p => p);
+}
+
+function loadSVG(data) {
+  d3.selectAll('g').each(function () {
+    const gParent = this;
+    d3.select(data).selectAll('path').each(function() {
+      gParent.appendChild(this.cloneNode(true));
+    });
+  });
+
+  d3.selectAll('g.overallG').each(function(d) {
+    d3.select(this).selectAll('path').datum(d);
+  });
+
+  const fourColorScale = d3.scaleOrdinal()
+    .domain(['UEFA', 'CONMEBOL', 'CONCACAF', 'AFC'])
+    .range(['#5eafc6', '#FE9922', '#93C464', '#fcbc34' ]);
+
+  d3.selectAll('path')
+    .style('fill', p => {
+      if (p) {
+        return fourColorScale(p.region);
+      }
+    })
+    .style('stroke', 'black').style('stroke-width', '2px');
+}
+
 function overallTeamViz(incomingData) {
+  // d3.text('../resources/modal.html').then(html => {
+  //   d3.select('body')
+  //     .append('div')
+  //     .attr('id', 'infobox')
+  //     .html(html);
+  // });
+
   d3.select('svg')
     .append('g')
     .attr('id', 'teamsG')
@@ -79,9 +117,10 @@ function overallTeamViz(incomingData) {
     .attr('transform', (d, i) => `translate(${i * 50}, 0)`);
 
   const teamG = d3.selectAll('g.overallG');
+
   teamG
     .append('circle')
-    .attr('r', 20)
+    .attr('r', 0)
     .transition()
     .delay((d, i) => i + 100)
     .duration(750)
@@ -89,14 +128,24 @@ function overallTeamViz(incomingData) {
     .transition()
     .duration(750)
     .attr('r', 20);
+  // teamG
+  //   .insert('image', 'test')
+  //   .attr('xlink:href', d => `../images/${d.team}.png`)
+  //   .attr('width', '45px')
+  //   .attr('height', '20px')
+  //   .attr('x', -22)
+  //   .attr('y', -10);
   teamG
     .append('text')
     .attr('y', 30)
     .text(d => d.team)
     .style('pointer-events', 'none');
-  teamG.on('mouseover', highlightRegion);
-  teamG
-    .on('mouseout', unHighlight);
+
+  d3.html('../resources/icon.svg').then(loadSVG);
+
+  // teamG.on('mouseover', highlightRegion);
+  // teamG.on('mouseout', unHighlight);
+  // teamG.on('click', teamClick);
 
   createControls(incomingData);
 }
