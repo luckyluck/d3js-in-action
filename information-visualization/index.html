@@ -10,8 +10,8 @@
     <script>
       // (async () => {
       //   const [cities, { tweets }] = await Promise.all([
-      //     d3.csv('./cities.csv'),
-      //     d3.json('./tweets.json'),
+      //     d3.csv('../data/cities.csv'),
+      //     d3.json('../data/tweets.json'),
       //   ]);
       //
       //   console.log('cities:', cities);
@@ -46,8 +46,8 @@
         //   .html(d => d.label);
       }
 
-      d3.csv('./cities.csv').then(dataViz).catch(console.error);
-      d3.json('./tweets.json').then(({ tweets }) => {
+      d3.csv('../data/cities.csv').then(dataViz).catch(console.error);
+      d3.json('../data/tweets.json').then(({ tweets }) => {
           const nestedTweets = d3.nest().key(d => d.user).entries(tweets);
 
           nestedTweets.forEach(d => {
@@ -72,7 +72,7 @@
             .style('stroke', '#9A8B7A')
             .style('stroke-width', '1px');
       }).catch(console.error);
-      d3.json('./tweets.json').then(({ tweets }) => {
+      d3.json('../data/tweets.json').then(({ tweets }) => {
         tweets.forEach(d => {
           d.impact = d.favorites.length + d.retweets.length;
           d.tweetTime = new Date(d.timestamp);
@@ -99,7 +99,7 @@
           .style('stroke', 'black')
           .style('stroke-width', '1px');
       }).catch(console.error);
-      d3.json('./tweets.json').then(({ tweets }) => {
+      d3.json('../data/tweets.json').then(({ tweets }) => {
         tweets.forEach(d => {
           d.impact = d.favorites.length + d.retweets.length;
           d.tweetTime = new Date(d.timestamp);

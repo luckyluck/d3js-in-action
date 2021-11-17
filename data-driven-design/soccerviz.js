@@ -102,5 +102,5 @@ function overallTeamViz(incomingData) {
 }
 
 function createSoccerViz() {
-  d3.csv('./worldcup.csv').then(overallTeamViz).catch(console.error);
+  d3.csv('../data/worldcup.csv').then(overallTeamViz).catch(console.error);
 }
